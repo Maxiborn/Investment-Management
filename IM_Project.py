@@ -9,23 +9,23 @@ pd.options.mode.chained_assignment = None
 
 
 ################# GDP ###################
-# Dateipfad zur Excel-Datei
+# Excel-Data
 IM_Data = "/Users/maximilianborn/Desktop/St Andrews lectures/Investment Management/Project/IM_Data.xlsx"  # Passe den Dateinamen an
 
-# Mit pandas die Excel-Datei einlesen
+# Read Excel Data
 df_stocks = pd.read_excel(IM_Data, sheet_name="Stocks")
 df_fund = pd.read_excel(IM_Data, sheet_name="Fund")
 
-# DataFrame anzeigen
+# Show DataFrame
 #print(df_stocks)
 #print(df_fund)
 
-# DataFrames mergen 
+# Merge DataFrames 
 df_stocks["Jahr"] = pd.to_datetime(df_stocks['Date'], format='%y.%m.%d').dt.year
 df_fund["Jahr"] = pd.to_datetime(df_fund['FYR'], format='%y.%m.%d').dt.year
 merge_df = df_stocks.merge(df_fund, on=['Firm Identifier', 'Jahr'], how='left')
 
-# Kennzahlen hinzufügen 
+# Add values
 merge_df["EV"] = merge_df["Size"] + merge_df["Total debt "] - merge_df["Cash & Cash Equivalents"]
 merge_df["EBIT I"] = merge_df["Total Assets"] * merge_df["Profitability"]
 merge_df["EBIT II"] = merge_df["Total Assets"] * merge_df["ROA"]
@@ -36,23 +36,23 @@ print(merge_df)
 
 merge_df.to_excel('IM.xlsx', index=False)
 
-# Halbjahre erstellen
+# Create half year steps
 min_date = merge_df['Date'].min()
 max_date = merge_df['Date'].max()
 
-# Erstelle eine leere Liste, um die Halbjahresschritte zu speichern
+# Create a empty list for saving the half year steps
 monthly_steps = []
 
-# Setze das Startdatum auf das kleinste Datum und gehe Monat für Monat vor
+# Set start data equal to the smallest date and proceed month per moneth
 current_date = min_date
 while current_date <= max_date:
     monthly_steps.append(current_date)
     # Gehe einen Monat vorwärts und setze das Datum auf den ersten Tag des nächsten Monats
     current_date = (current_date + pd.DateOffset(months=1)).replace(day=1)
 
-# Die Liste monthly_steps enthält nun Monatsschritte mit dem ersten Tag jedes Monats
+# The list monthly_steps has monthly steps with the first day of each month
 
-# Du kannst die Liste ausdrucken oder weiter verwenden
+# print list
 #print(monthly_steps)
 
 
@@ -83,20 +83,20 @@ average_df.to_excel('Average_.xlsx', index=False)
 
 grouped = average_df.groupby('Date')
 
-# Berechne die Quantile für die Spalten "Werte 1" und "Werte 2" in jeder Gruppe
+# Calculate the quantiles for the columns "Werte 1" and "Werte 2" in each group
 quantiles = grouped[['EBIT I / EV',  'EBIT II / EV',   'BV / EV']].quantile([0.25, 0.75])
 
-# Die Variable 'quantiles' enthält nun die Quantile für jede Gruppe (Datum)
+# The variable 'quantiles' contains the quantiles for each group (date)
 print(quantiles)
 quantiles = quantiles.reset_index()
 
-# Benennen Sie die Multiindex-Spalten um, um die Quantile anzugeben
+# Rename the multiindex-columns for indicating the quantils
 quantiles.columns = ['Date', 'Quantile', 'EBIT I / EV', 'EBIT II / EV', 'BV / EV']
 
-# Jetzt haben Sie die Quantile als separate Spalten
+# The quantils have now own rows
 print(quantiles)
 
-# Zeigen Sie das aktualisierte DataFrame an
+# Show the updated dataframe
 #print(average_df)
 
 # Create portfolios 1 and 4 per Strategy
